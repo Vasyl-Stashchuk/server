@@ -11,14 +11,10 @@ const path = require('path'); // Підключення модуля path для
 const pg = require('pg');
 
 const PORT = process.env.PORT || 5000; // Встановлення порту для сервера, отриманого з оточення або за замовчуванням 5000
-const HOST = '0.0.0.0';  // Вказуємо, що сервер має слухати всі доступні мережеві інтерфейси
 
 const app = express(); // Створення екземпляру Express
 
-app.use(cors({
-    // origin: 'http://236709.fornex.cloud', // замініть на адресу вашого React додатка
-    credentials: true
-})); // Використання middleware cors для обробки CORS запитів
+app.use(cors()); // Використання middleware cors для обробки CORS запитів
 app.use(express.json()); // Використання middleware для обробки JSON-даних у запитах
 const staticPath = process.pkg ? path.join(path.dirname(process.execPath), 'static') : path.join(__dirname, 'static');
 app.use(express.static(staticPath));// Встановлення шляху до статичних файлів (наприклад, зображень)
@@ -36,8 +32,7 @@ const start = async () => {
     try {
         await sequelize.authenticate(); // Перевірка з'єднання з базою даних
         await sequelize.sync(); // Синхронізація моделей бази даних
-        // Змінюємо app.listen, щоб він також прослуховував HOST
-        app.listen(PORT, HOST, () => console.log(`Сервер запущено на ${HOST}:${PORT}`)); // Запуск сервера на вказаному порту
+        app.listen(PORT, () => console.log(`Сервер запущено на порту ${PORT}`)); // Запуск сервера на вказаному порту
     } catch (e) {
         console.log(e); // Обробка можливих помилок під час запуску сервера
     }
