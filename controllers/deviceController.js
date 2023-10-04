@@ -1,3 +1,4 @@
+const fs = require('fs').promises; // Імпорт асинхронних методів файлової системи.
 const uuid = require('uuid'); // Імпорт модуля "uuid" для створення унікальних ідентифікаторів.
 const path = require('path'); // Імпорт модуля "path" для роботи зі шляхами файлів.
 const {Device, DeviceInfo, DeviceImage} = require('../models/models'); // Імпорт моделей "Device" і "DeviceInfo" з файлу "models".
@@ -95,20 +96,47 @@ class DeviceController {
 
     async delete(req, res, next) {
         try {
-            const { id } = req.params; // Отримайте ідентифікатор пристрою з параметрів запиту.
+            const { id } = req.params;
 
-            // Виконайте операцію видалення пристрою з бази даних (за допомогою методу destroy або findByIdAndDelete, залежно від ORM/бібліотеки, яку ви використовуєте).
-            // Приклад з Sequelize:
-            const device = await Device.destroy({ where: { id } });
+            // 1. Знайдіть пристрій у базі даних з пов'язаними із ним фотографіями та інформацією
+            const device = await Device.findOne({
+                where: { id },
+                include: [
+                    { model: DeviceImage, as: 'deviceImages' },
+                    { model: DeviceInfo, as: 'info' }
+                ]
+            });
 
             if (!device) {
                 return next(ApiError.notFound(`Device with ID ${id} not found.`));
             }
 
+            // 2. Отримайте список URL фотографій пристрою
+            const imageUrls = device.deviceImages.map(img => img.imageUrl);
+
+            // 3. Видаліть фотографії з файлової системи
+            const deleteImagePromises = imageUrls.map(async imageUrl => {
+                const imagePath = path.resolve(__dirname, '..', 'static', imageUrl);
+                try {
+                    await fs.access(imagePath);
+                    await fs.unlink(imagePath);
+                } catch (error) {
+                    console.log(`Image ${imageUrl} not found on file system.`);
+                }
+            });
+
+            // Очікуємо завершення усіх операцій видалення
+            await Promise.all(deleteImagePromises);
+
+            // 4. Видалення пристрою, його фотографій та інформації з бази даних
+            await DeviceImage.destroy({ where: { deviceId: id } });
+            await DeviceInfo.destroy({ where: { deviceId: id } });
+            await device.destroy();
+
             // Відповідь сервера з підтвердженням видалення
-            return res.json({ message: 'Device deleted successfully' });
+            return res.json({ message: 'Device, its images and info deleted successfully' });
         } catch (e) {
-            next(ApiError.internalServerError(e.message)); // Обробка помилки та передача її далі через middleware.
+            next(ApiError.internalServerError(e.message));
         }
     }
 
