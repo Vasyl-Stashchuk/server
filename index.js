@@ -9,10 +9,23 @@ const router = require('./routes/index'); // Підключення маршру
 const errorHandler = require('./middleware/ErrorHanldingMiddleware'); // Підключення middleware для обробки помилок
 const path = require('path'); // Підключення модуля path для роботи з шляхами файлів
 const pg = require('pg');
+const https = require('https');
+const fs = require('fs');
 
 const PORT = process.env.PORT || 5000; // Встановлення порту для сервера, отриманого з оточення або за замовчуванням 5000
 
 const app = express(); // Створення екземпляру Express
+
+
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/chain.pem', 'utf8');
+
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+};
 
 app.use(cors()); // Використання middleware cors для обробки CORS запитів
 app.use(express.json()); // Використання middleware для обробки JSON-даних у запитах
@@ -26,6 +39,11 @@ app.use(errorHandler);
 
 console.log("Шлях до папки static:", staticPath);
 
+
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
+});
 
 // Функція для запуску сервера
 const start = async () => {
