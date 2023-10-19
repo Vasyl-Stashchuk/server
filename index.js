@@ -16,16 +16,14 @@ const PORT = process.env.PORT || 5000; // Встановлення порту д
 
 const app = express(); // Створення екземпляру Express
 
+app.get('/', (req, res) => {
+    res.send('Hello over HTTPS!');
+});
 
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/privkey.pem', 'utf8');
 const certificate = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/cert.pem', 'utf8');
 const ca = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/chain.pem', 'utf8');
 
-const credentials = {
-    key: privateKey,
-    cert: certificate,
-    ca: ca
-};
 
 app.use(cors()); // Використання middleware cors для обробки CORS запитів
 app.use(express.json()); // Використання middleware для обробки JSON-даних у запитах
@@ -40,9 +38,12 @@ app.use(errorHandler);
 console.log("Шлях до папки static:", staticPath);
 
 
+const credentials = {key: privateKey, cert: certificate, ca: ca};
+
 const httpsServer = https.createServer(credentials, app);
-httpsServer.listen(PORT, () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
+
+httpsServer.listen(5000, () => {
+    console.log('HTTPS Server running on port 5000');
 });
 
 // Функція для запуску сервера
