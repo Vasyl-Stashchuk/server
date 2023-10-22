@@ -8,9 +8,9 @@ const fileUpload = require('express-fileupload'); // Підключення бі
 const router = require('./routes/index'); // Підключення маршрутів (routes)
 const errorHandler = require('./middleware/ErrorHanldingMiddleware'); // Підключення middleware для обробки помилок
 const path = require('path'); // Підключення модуля path для роботи з шляхами файлів
-// const pg = require('pg');
-// const https = require('https');
-// const fs = require('fs');
+const pg = require('pg');
+const https = require('https');
+const fs = require('fs');
 
 
 const PORT = process.env.PORT || 5000; // Встановлення порту для сервера, отриманого з оточення або за замовчуванням 5000
@@ -21,9 +21,9 @@ app.get('/', (req, res) => {
     res.send('Hello over HTTPS!');
 });
 
-// const privateKey = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/privkey.pem', 'utf8');
-// const certificate = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/cert.pem', 'utf8');
-// const ca = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/chain.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/chain.pem', 'utf8');
 
 
 app.use(cors()); // Використання middleware cors для обробки CORS запитів
@@ -39,13 +39,13 @@ app.use(errorHandler);
 console.log("Шлях до папки static:", staticPath);
 
 
-// const credentials = {key: privateKey, cert: certificate, ca: ca};
+const credentials = {key: privateKey, cert: certificate, ca: ca};
 
-// const httpsServer = https.createServer(credentials, app);
+const httpsServer = https.createServer(credentials, app);
 
-// httpsServer.listen(5000, () => {
-//     console.log('HTTPS Server running on port 5000');
-// });
+httpsServer.listen(5000, () => {
+    console.log('HTTPS Server running on port 5000');
+});
 
 // Функція для запуску сервера
 const start = async () => {
