@@ -26,7 +26,10 @@ const certificate = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/cert.p
 const ca = fs.readFileSync('/etc/letsencrypt/live/kronkstroy.com/chain.pem', 'utf8');
 
 
-app.use(cors()); // Використання middleware cors для обробки CORS запитів
+app.use(cors({
+    origin: 'https://kronkstroy.com', // adjust if you have different origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // include other HTTP methods as needed
+})); // Використання middleware cors для обробки CORS запитів
 app.use(express.json()); // Використання middleware для обробки JSON-даних у запитах
 const staticPath = process.pkg ? path.join(path.dirname(process.execPath), 'static') : path.join(__dirname, 'static');
 app.use(express.static(staticPath));// Встановлення шляху до статичних файлів (наприклад, зображень)
