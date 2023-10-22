@@ -19,7 +19,7 @@ class DeviceController {
             const imageUrls = [];
 
             for (const image of images) {
-                const fileName = uuid.v4() + ".jpg";
+                const fileName = uuid.v4() + ".webp";
                 image.mv(path.resolve(__dirname, '..', 'static', fileName));
                 imageUrls.push(fileName);
             }
